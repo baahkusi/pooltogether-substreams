@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package contract.v1;
+
+message Events {
+    repeated ClaimedDraw claimed_draws = 1;
+}
+
+message ClaimedDraw {
+    string evt_tx_hash = 1;
+    uint32 evt_index = 2;
+    google.protobuf.Timestamp evt_block_time = 3;
+    uint64 evt_block_number = 4;
+    bytes user = 5;
+    uint64 draw_id = 6;
+    string payout = 7;
+}
