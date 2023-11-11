@@ -12,7 +12,7 @@ use substreams_ethereum::Event;
 #[allow(unused_imports)]
 use num_traits::cast::ToPrimitive;
 use std::str::FromStr;
-use substreams::scalar::{BigDecimal, BigInt};
+use substreams::scalar::BigInt;
 
 const TRACKED_CONTRACT: [u8; 20] = hex!("b9a179DcA5a7bf5f8B9E088437B3A85ebB495eFe");
 
@@ -90,67 +90,53 @@ fn graph_out(
 
     // Loop over all the abis events to create changes
     events.claimed_draws.into_iter().for_each(|draw| {
-        match totals_claimed.get_last(format!("Aggregate")) {
-            Some(total) => {
+        if let Some(total) = totals_claimed.get_last(format!("Aggregate")) {
+            if total == BigInt::from_str(&draw.payout).unwrap() {
+                tables
+                    .create_row("Aggregate", format!("Aggregate"))
+                    .set("totalClaimed", BigInt::from_str(&draw.payout).unwrap());
+            } else {
                 tables
                     .update_row("Aggregate", format!("Aggregate"))
                     .set("totalClaimed", total);
             }
-            None => {
-                tables
-                    .create_row("Aggregate", format!("Aggregate"))
-                    .set("totalClaimed", BigDecimal::from_str(&draw.payout).unwrap());
-            }
         }
 
-        match totals_claimed.get_last(format!("Account:{}", Hex(&draw.user).to_string())) {
-            Some(total) => {
+        if let Some(total) =
+            totals_claimed.get_last(format!("Account:{}", Hex(&draw.user).to_string()))
+        {
+            if total == BigInt::from_str(&draw.payout).unwrap() {
+                tables
+                    .create_row("Account", format!("{}", Hex(&draw.user).to_string()))
+                    .set("totalClaimed", BigInt::from_str(&draw.payout).unwrap());
+            } else {
                 tables
                     .update_row("Account", format!("{}", Hex(&draw.user).to_string()))
                     .set("totalClaimed", total);
             }
-            None => {
-                tables
-                    .create_row("Account", format!("{}", Hex(&draw.user).to_string()))
-                    .set("totalClaimed", draw.draw_id);
-            }
         }
 
-        match totals_claimed.get_last(format!("Draw:{}", &draw.draw_id)) {
-            Some(total) => {
+        if let Some(total) = totals_claimed.get_last(format!("Draw:{}", &draw.draw_id)) {
+            if total == BigInt::from_str(&draw.payout).unwrap() {
+                tables
+                    .create_row("Draw", format!("{}", &draw.draw_id))
+                    .set("totalClaimed", BigInt::from_str(&draw.payout).unwrap())
+                    .set("createdAtTimestamp", draw.evt_block_time.as_ref().unwrap().seconds)
+                    .set("updatedAtTimestamp", draw.evt_block_time.as_ref().unwrap().seconds);
+            } else {
                 tables
                     .update_row("Draw", format!("{}", &draw.draw_id))
                     .set("totalClaimed", total)
-                    .set("updatedAtTimestamp", draw.evt_block_time.as_ref().unwrap());
-            }
-            None => {
-                tables
-                    .create_row("Draw", format!("{}", &draw.draw_id))
-                    .set("totalClaimed", BigDecimal::from_str(&draw.payout).unwrap())
-                    .set("createdAtTimestamp", draw.evt_block_time.as_ref().unwrap())
-                    .set("updatedAtTimestamp", draw.evt_block_time.as_ref().unwrap());
+                    .set("updatedAtTimestamp", draw.evt_block_time.as_ref().unwrap().seconds);
             }
         }
 
-        match totals_claimed.get_last(format!(
+        if let Some(total) = totals_claimed.get_last(format!(
             "AccountDraw:{}:{}",
             Hex(&draw.user).to_string(),
             &draw.draw_id
         )) {
-            Some(total) => {
-                tables
-                    .update_row(
-                        "AccountDraw",
-                        format!("{}:{}", Hex(&draw.user).to_string(), &draw.draw_id),
-                    )
-                    .set("claimed", BigDecimal::from_str(&draw.payout).unwrap())
-                    .set("totalClaimed", total)
-                    .set(
-                        "lastClaimedAtTimestamp",
-                        draw.evt_block_time.as_ref().unwrap(),
-                    );
-            }
-            None => {
+            if total == BigInt::from_str(&draw.payout).unwrap() {
                 tables
                     .create_row(
                         "AccountDraw",
@@ -158,15 +144,27 @@ fn graph_out(
                     )
                     .set("account", format!("{}", Hex(&draw.user).to_string()))
                     .set("draw", format!("{}", &draw.draw_id))
-                    .set("claimed", BigDecimal::from_str(&draw.payout).unwrap())
-                    .set("totalClaimed", BigDecimal::from_str(&draw.payout).unwrap())
+                    .set("claimed", BigInt::from_str(&draw.payout).unwrap())
+                    .set("totalClaimed", BigInt::from_str(&draw.payout).unwrap())
                     .set(
                         "firstClaimedAtTimestamp",
-                        draw.evt_block_time.as_ref().unwrap(),
+                        draw.evt_block_time.as_ref().unwrap().seconds,
                     )
                     .set(
                         "lastClaimedAtTimestamp",
-                        draw.evt_block_time.as_ref().unwrap(),
+                        draw.evt_block_time.as_ref().unwrap().seconds,
+                    );
+            } else {
+                tables
+                    .update_row(
+                        "AccountDraw",
+                        format!("{}:{}", Hex(&draw.user).to_string(), &draw.draw_id),
+                    )
+                    .set("claimed", BigInt::from_str(&draw.payout).unwrap())
+                    .set("totalClaimed", total)
+                    .set(
+                        "lastClaimedAtTimestamp",
+                        draw.evt_block_time.as_ref().unwrap().seconds,
                     );
             }
         }

@@ -16,6 +16,8 @@
 
 - This substream implementation will implement the existing subgraph entities in addition to extra ones.
 
+- The subgraph studio can be found here https://api.studio.thegraph.com/query/52116/pool_prize_distributor/version/latest
+
 ### Build & Pack
 
 - `make pack` to create `.spkg` file.
