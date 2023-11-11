@@ -23,15 +23,29 @@
 - `make pack` to create `.spkg` file.
 
 
-### Deploy on hosted subgraph studio
+### Deploy on subgraph studio
 
-- create a subgraph on the graph website https://thegraph.com/explorer
+- create a subgraph  https://thegraph.com/explorer
 
 - you will be given a list of steps to follow, you only need to follow these;
 
 - `graph auth --studio [studio-key]` to authenticate
 
 - `graph deploy --studio [studio-name]`
+
+
+### Deploy on hosted service
+
+- create a hosted service account  https://thegraph.com/hosted-service
+
+- create a subgraph from you dashboard,
+
+- you will be given a list of steps to follow, you only need to follow these;
+
+- `graph auth --product hosted-service [studio-key]` to authenticate
+
+- `graph deploy --product hosted-service [studio-name]`
+
 
 ### Sample Query
 
