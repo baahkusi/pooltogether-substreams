@@ -16,4 +16,38 @@
 
 - This substream implementation will implement the existing subgraph entities in addition to extra ones.
 
-### Entities
+### Build & Pack
+
+- `make pack` to create `.spkg` file.
+
+
+### Deploy on hosted subgraph studio
+
+- create a subgraph on the graph website https://thegraph.com/explorer
+
+- you will be given a list of steps to follow, you only need to follow these;
+
+- `graph auth --studio [studio-key]` to authenticate
+
+- `graph deploy --studio [studio-name]`
+
+### Sample Query
+
+```graphql
+{
+  aggregates(first: 5) {
+    id
+    totalClaimed
+  }
+  accounts(first: 5) {
+    id
+    totalClaimed
+    draws {
+      id
+      totalClaimed
+      firstClaimedAtTimestamp
+      lastClaimedAtTimestamp
+    }
+  }
+}
+```

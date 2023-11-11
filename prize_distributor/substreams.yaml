@@ -21,18 +21,27 @@ binaries:
 modules:
   - name: map_events
     kind: map
-    initialBlock: 23725876
+    initialBlock: 13473888
     inputs:
       - source: sf.ethereum.type.v2.Block
     output:
       type: proto:contract.v1.Events
+  
+  - name: total_claimed_store
+    kind: store
+    initialBlock: 13473888
+    updatePolicy: add
+    valueType: bigint
+    inputs:
+      - map: map_events
 
   - name: graph_out
     kind: map
-    initialBlock: 23725876
+    initialBlock: 13473888
     inputs:
       - map: map_events
+      - store: total_claimed_store
     output:
       type: proto:sf.substreams.entity.v1.EntityChanges
 
-network: polygon
+network: mainnet
