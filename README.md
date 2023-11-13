@@ -20,9 +20,11 @@
 
 - The hosted service can be found here https://api.thegraph.com/subgraphs/name/baahkusi/prize_distributor_stream
 
-### Build & Pack
+### Pack & Build
 
 - `make pack` to create `.spkg` file.
+
+- `graph build`
 
 
 ### Deploy on subgraph studio
