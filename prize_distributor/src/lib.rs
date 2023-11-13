@@ -1,5 +1,6 @@
 mod abi;
 mod pb;
+mod util;
 use hex_literal::hex;
 use pb::contract::v1 as contract;
 use substreams::store::{StoreAdd, StoreAddBigInt, StoreGet, StoreGetBigInt, StoreNew};
@@ -9,12 +10,16 @@ use substreams_entity_change::tables::Tables as EntityChangesTables;
 use substreams_ethereum::pb::eth::v2 as eth;
 use substreams_ethereum::Event;
 
+use util::to_big_decimal;
+
 #[allow(unused_imports)]
 use num_traits::cast::ToPrimitive;
 use std::str::FromStr;
 use substreams::scalar::BigInt;
 
 const TRACKED_CONTRACT: [u8; 20] = hex!("b9a179DcA5a7bf5f8B9E088437B3A85ebB495eFe");
+
+const PRIZE_DECIMALS: u8 = 6;
 
 substreams_ethereum::init!();
 
@@ -92,13 +97,15 @@ fn graph_out(
     events.claimed_draws.into_iter().for_each(|draw| {
         if let Some(total) = totals_claimed.get_last(format!("Aggregate")) {
             if total == BigInt::from_str(&draw.payout).unwrap() {
-                tables
-                    .create_row("Aggregate", format!("Aggregate"))
-                    .set("totalClaimed", BigInt::from_str(&draw.payout).unwrap());
+                tables.create_row("Aggregate", format!("Aggregate")).set(
+                    "totalClaimed",
+                    to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                );
             } else {
-                tables
-                    .update_row("Aggregate", format!("Aggregate"))
-                    .set("totalClaimed", total);
+                tables.update_row("Aggregate", format!("Aggregate")).set(
+                    "totalClaimed",
+                    to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap(),
+                );
             }
         }
 
@@ -108,11 +115,17 @@ fn graph_out(
             if total == BigInt::from_str(&draw.payout).unwrap() {
                 tables
                     .create_row("Account", format!("{}", Hex(&draw.user).to_string()))
-                    .set("totalClaimed", BigInt::from_str(&draw.payout).unwrap());
+                    .set(
+                        "totalClaimed",
+                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                    );
             } else {
                 tables
                     .update_row("Account", format!("{}", Hex(&draw.user).to_string()))
-                    .set("totalClaimed", total);
+                    .set(
+                        "totalClaimed",
+                        to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap(),
+                    );
             }
         }
 
@@ -120,14 +133,29 @@ fn graph_out(
             if total == BigInt::from_str(&draw.payout).unwrap() {
                 tables
                     .create_row("Draw", format!("{}", &draw.draw_id))
-                    .set("totalClaimed", BigInt::from_str(&draw.payout).unwrap())
-                    .set("createdAtTimestamp", draw.evt_block_time.as_ref().unwrap().seconds)
-                    .set("updatedAtTimestamp", draw.evt_block_time.as_ref().unwrap().seconds);
+                    .set(
+                        "totalClaimed",
+                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                    )
+                    .set(
+                        "createdAtTimestamp",
+                        draw.evt_block_time.as_ref().unwrap().seconds,
+                    )
+                    .set(
+                        "updatedAtTimestamp",
+                        draw.evt_block_time.as_ref().unwrap().seconds,
+                    );
             } else {
                 tables
                     .update_row("Draw", format!("{}", &draw.draw_id))
-                    .set("totalClaimed", total)
-                    .set("updatedAtTimestamp", draw.evt_block_time.as_ref().unwrap().seconds);
+                    .set(
+                        "totalClaimed",
+                        to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap(),
+                    )
+                    .set(
+                        "updatedAtTimestamp",
+                        draw.evt_block_time.as_ref().unwrap().seconds,
+                    );
             }
         }
 
@@ -144,8 +172,14 @@ fn graph_out(
                     )
                     .set("account", format!("{}", Hex(&draw.user).to_string()))
                     .set("draw", format!("{}", &draw.draw_id))
-                    .set("claimed", BigInt::from_str(&draw.payout).unwrap())
-                    .set("totalClaimed", BigInt::from_str(&draw.payout).unwrap())
+                    .set(
+                        "claimed",
+                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                    )
+                    .set(
+                        "totalClaimed",
+                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                    )
                     .set(
                         "firstClaimedAtTimestamp",
                         draw.evt_block_time.as_ref().unwrap().seconds,
@@ -160,8 +194,14 @@ fn graph_out(
                         "AccountDraw",
                         format!("{}:{}", Hex(&draw.user).to_string(), &draw.draw_id),
                     )
-                    .set("claimed", BigInt::from_str(&draw.payout).unwrap())
-                    .set("totalClaimed", total)
+                    .set(
+                        "claimed",
+                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                    )
+                    .set(
+                        "totalClaimed",
+                        to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap(),
+                    )
                     .set(
                         "lastClaimedAtTimestamp",
                         draw.evt_block_time.as_ref().unwrap().seconds,
