@@ -99,12 +99,12 @@ fn graph_out(
             if total == BigInt::from_str(&draw.payout).unwrap() {
                 tables.create_row("Aggregate", format!("Aggregate")).set(
                     "totalClaimed",
-                    to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                    to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap().to_string(),
                 );
             } else {
                 tables.update_row("Aggregate", format!("Aggregate")).set(
                     "totalClaimed",
-                    to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap(),
+                    to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap().to_string(),
                 );
             }
         }
@@ -117,14 +117,14 @@ fn graph_out(
                     .create_row("Account", format!("{}", Hex(&draw.user).to_string()))
                     .set(
                         "totalClaimed",
-                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap().to_string(),
                     );
             } else {
                 tables
                     .update_row("Account", format!("{}", Hex(&draw.user).to_string()))
                     .set(
                         "totalClaimed",
-                        to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap(),
+                        to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap().to_string(),
                     );
             }
         }
@@ -135,7 +135,7 @@ fn graph_out(
                     .create_row("Draw", format!("{}", &draw.draw_id))
                     .set(
                         "totalClaimed",
-                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap().to_string(),
                     )
                     .set(
                         "createdAtTimestamp",
@@ -150,7 +150,7 @@ fn graph_out(
                     .update_row("Draw", format!("{}", &draw.draw_id))
                     .set(
                         "totalClaimed",
-                        to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap(),
+                        to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap().to_string(),
                     )
                     .set(
                         "updatedAtTimestamp",
@@ -174,11 +174,11 @@ fn graph_out(
                     .set("draw", format!("{}", &draw.draw_id))
                     .set(
                         "claimed",
-                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap().to_string(),
                     )
                     .set(
                         "totalClaimed",
-                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap().to_string(),
                     )
                     .set(
                         "firstClaimedAtTimestamp",
@@ -196,11 +196,11 @@ fn graph_out(
                     )
                     .set(
                         "claimed",
-                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap(),
+                        to_big_decimal(&draw.payout, PRIZE_DECIMALS).unwrap().to_string(),
                     )
                     .set(
                         "totalClaimed",
-                        to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap(),
+                        to_big_decimal(total.to_string().as_str(), PRIZE_DECIMALS).unwrap().to_string(),
                     )
                     .set(
                         "lastClaimedAtTimestamp",
